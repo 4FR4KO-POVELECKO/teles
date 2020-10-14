@@ -2,6 +2,7 @@ package teles
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
@@ -42,6 +43,10 @@ func newBot(token string) (*bot, error) {
 //
 // Send message
 func (b *bot) sendMessage(message string) error {
+	if b == nil {
+		return errors.New("Not valid bot")
+	}
+
 	jsonFile, _ := os.Open("chat_ID.json")
 	defer jsonFile.Close()
 

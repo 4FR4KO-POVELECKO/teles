@@ -25,10 +25,10 @@ func Start(token string) error {
 // Creates a .log file and writes the message, need to create a directory 'log'
 // Send message to the Telegram bot
 // Log message
-func Logger(msg string) {
+func Logger(msg string) error {
 	f, err := os.OpenFile("log/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	defer f.Close()
@@ -36,7 +36,9 @@ func Logger(msg string) {
 	logger := log.New(f, "Logger", log.LstdFlags)
 
 	if err := b.sendMessage(msg); err != nil {
-		log.Println(err)
+		return err
 	}
 	logger.Println(msg)
+
+	return nil
 }
