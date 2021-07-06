@@ -1,4 +1,4 @@
-# Teles ![](.github/rsz_1unnamed.jpg)
+# Teles ![](.github/logo.png)
 Teles is a small logger for Go.
 
 Logging in telegram bot, file ```.log``` , terminal. 
