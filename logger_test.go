@@ -6,7 +6,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/4FR4KO-POVELECKO/teles"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +16,7 @@ func TestLogger_New(t *testing.T) {
 	assert.Equal(t, reflect.TypeOf(logger), reflect.TypeOf(&teles.Logger{}))
 }
 
-var now = time.Now().Format("2006.01.02 15:04:05")
+// var now = time.Now().Format("2006.01.02 15:04:05")
 var buf bytes.Buffer
 var logger = teles.New()
 
