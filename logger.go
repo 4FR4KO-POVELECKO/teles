@@ -146,6 +146,7 @@ func (l *Logger) Panic(args ...interface{}) {
 }
 
 // Helpers
+
 func (l *Logger) checkToArray(level Level) bool {
 	for _, value := range l.DirLevels {
 		if value == level {
