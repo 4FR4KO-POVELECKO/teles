@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/4FR4KO-POVELECKO/teles/internal/tg"
 )
 
 type Logger struct {
-	BotToken  string
+	Bot       *tg.TelegramBot
 	BotLevels []Level
 
 	DirPath   string
@@ -19,8 +21,16 @@ func New() *Logger {
 	return &Logger{}
 }
 
-func (l *Logger) NewBot(token string, levels []Level) {
+func (l *Logger) NewBot(token string, levels []Level) error {
+	bot, err := tg.New(token)
+	if err != nil {
+		return errors.New("Error to connect the bot")
+	}
 
+	l.Bot = bot
+	l.BotLevels = levels
+
+	return nil
 }
 
 func (l *Logger) NewDir(path string, levels []Level) error {
@@ -84,71 +94,124 @@ func (l *Logger) LogToFile(path string, level Level, args ...interface{}) {
 	}
 }
 
+func (l *Logger) GetLogStr(level Level, args ...interface{}) string {
+	str := fmt.Sprintf("%v", args...)
+	write := fmt.Sprintf("[%s] %s %s\n", now, level, str)
+
+	return write
+}
+
 func (l *Logger) Trace(args ...interface{}) {
-	result := l.checkToArray(Trace)
+	result := l.checkToArray(Trace, l.DirLevels)
 	if result {
 		l.LogToFile("./log/trace.log", Trace, args...)
+	}
+
+	result = l.checkToArray(Trace, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Trace, args...)
+		l.Bot.Send(msg)
 	}
 
 	l.Log(Trace, args...)
 }
 
 func (l *Logger) Debug(args ...interface{}) {
-	result := l.checkToArray(Debug)
+	result := l.checkToArray(Debug, l.DirLevels)
 	if result {
 		l.LogToFile("./log/debug.log", Debug, args...)
+	}
+
+	result = l.checkToArray(Debug, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Debug, args...)
+		l.Bot.Send(msg)
 	}
 
 	l.Log(Debug, args...)
 }
 
 func (l *Logger) Info(args ...interface{}) {
-	result := l.checkToArray(Info)
+	result := l.checkToArray(Info, l.DirLevels)
 	if result {
 		l.LogToFile("./log/info.log", Info, args...)
 	}
+
+	result = l.checkToArray(Info, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Info, args...)
+		l.Bot.Send(msg)
+	}
+
 	l.Log(Info, args...)
 }
 
 func (l *Logger) Warning(args ...interface{}) {
-	result := l.checkToArray(Warning)
+	result := l.checkToArray(Warning, l.DirLevels)
 	if result {
 		l.LogToFile("./log/warn.log", Warning, args...)
 	}
+
+	result = l.checkToArray(Warning, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Warning, args...)
+		l.Bot.Send(msg)
+	}
+
 	l.Log(Warning, args...)
 }
 
 func (l *Logger) Error(args ...interface{}) {
-	result := l.checkToArray(Error)
+	result := l.checkToArray(Error, l.DirLevels)
 	if result {
 		l.LogToFile("./log/error.log", Error, args...)
+	}
+
+	result = l.checkToArray(Error, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Error, args...)
+		l.Bot.Send(msg)
 	}
 
 	l.Log(Error, args...)
 }
 
 func (l *Logger) Fatal(args ...interface{}) {
-	result := l.checkToArray(Fatal)
+	result := l.checkToArray(Fatal, l.DirLevels)
 	if result {
 		l.LogToFile("./log/fatal.log", Fatal, args...)
 	}
+
+	result = l.checkToArray(Fatal, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Fatal, args...)
+		l.Bot.Send(msg)
+	}
+
 	l.Log(Fatal, args...)
 	os.Exit(1)
 }
 
 func (l *Logger) Panic(args ...interface{}) {
-	result := l.checkToArray(Panic)
+	result := l.checkToArray(Panic, l.DirLevels)
 	if result {
 		l.LogToFile("./log/panic.log", Panic, args...)
 	}
+
+	result = l.checkToArray(Panic, l.BotLevels)
+	if result {
+		msg := l.GetLogStr(Panic, args...)
+		l.Bot.Send(msg)
+	}
+
 	l.Log(Panic, args...)
 	panic(args)
 }
 
 // Helpers
 
-func (l *Logger) checkToArray(level Level) bool {
-	for _, value := range l.DirLevels {
+func (l *Logger) checkToArray(level Level, array []Level) bool {
+	for _, value := range array {
 		if value == level {
 			return true
 		}

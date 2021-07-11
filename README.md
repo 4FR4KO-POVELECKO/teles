@@ -1,8 +1,10 @@
 # Teles ![](.github/logo.png)
 Teles is a small logger for Go.
 
-Logging in telegram bot, file ```.log``` , terminal. 
-
+Logging in:
+- Telegram bot 
+- File ```.log```
+- Terminal 
 
 ## Installation
 
@@ -14,31 +16,71 @@ go get -u github.com/4FR4KO-POVELECKO/teles
 
 First, create bot in [BotFather](https://telegram.me/BotFather).
 
-Create log directory:
-```bash
-mkdir log
-```
-
 Start:
 ```go
 package main
 
 import (
-	"log"
 	"github.com/4FR4KO-POVELECKO/teles"
 )
 
 func main() {
-	err := teles.Start("TOKEN")
+	// Create new logger
+	logger := teles.New()
+
+	// Choose levels
+	levels := []teles.Level{
+		teles.Panic,
+		teles.Fatal,
+		teles.Error,
+		teles.Warning,
+		teles.Info,
+		teles.Debug,
+		teles.Trace,
+	}
+
+	// Create logger to directory
+	err := logger.NewDir("./log", levels)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err)
+	}
+
+	// Create logger to tg bot
+	err = logger.NewBot("BOT_TOKEN", levels)
+	if err != nil {
+		logger.Error(err)
 	}
 }
+
 ```
 
 Usage:
 ```go
-teles.Logger("log message")
+logger.Log(teles.Info, "text")
+logger.Trace("text")
+logger.Debug("text")
+logger.Info("text")
+logger.Error("text")
+logger.Warning("text")
+logger.Fatal("text")
+logger.Panic("text")
+```
+
+Levels:
+```go
+package teles
+
+type Level string
+
+const (
+	Panic   Level = "PANIC:"
+	Fatal   Level = "FATAL:"
+	Error   Level = "ERROR:"
+	Warning Level = "WARNING:"
+	Info    Level = "INFO:"
+	Debug   Level = "DEBUG:"
+	Trace   Level = "TRACE:"
+)
 ```
 
 ## Contributing
