@@ -1,4 +1,4 @@
-# Teles ![](.github/logo.png)
+# Teles ![](.github/logo.jpg)
 Teles is a small logger for Go.
 
 Logging in:
