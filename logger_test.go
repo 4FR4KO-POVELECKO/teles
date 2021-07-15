@@ -1,9 +1,7 @@
 package teles_test
 
 import (
-	"bufio"
 	"bytes"
-	"io"
 	"log"
 	"os"
 	"reflect"
@@ -28,32 +26,32 @@ func readOutput() {
 	}()
 }
 
-func readLastLine(path string) string {
-	file, _ := os.Open(path)
-	defer file.Close()
+// func readLastLine(path string) string {
+// 	file, _ := os.Open(path)
+// 	defer file.Close()
 
-	reader := bufio.NewReader(file)
-	lastLineSize := 0
-	for {
-		line, _, err := reader.ReadLine()
-		if err == io.EOF {
-			break
-		}
-		lastLineSize = len(line)
-	}
+// 	reader := bufio.NewReader(file)
+// 	lastLineSize := 0
+// 	for {
+// 		line, _, err := reader.ReadLine()
+// 		if err == io.EOF {
+// 			break
+// 		}
+// 		lastLineSize = len(line)
+// 	}
 
-	fileInfo, _ := os.Stat(path)
-	buffer := make([]byte, lastLineSize)
-	offset := fileInfo.Size() - int64(lastLineSize+1)
-	numRead, _ := file.ReadAt(buffer, offset)
+// 	fileInfo, _ := os.Stat(path)
+// 	buffer := make([]byte, lastLineSize)
+// 	offset := fileInfo.Size() - int64(lastLineSize+1)
+// 	numRead, _ := file.ReadAt(buffer, offset)
 
-	if offset != 0 {
-		buffer = buffer[:numRead]
-		return string(buffer)
-	}
+// 	if offset != 0 {
+// 		buffer = buffer[:numRead]
+// 		return string(buffer)
+// 	}
 
-	return ""
-}
+// 	return ""
+// }
 
 func TestLogger_NewBot(t *testing.T) {}
 
@@ -68,12 +66,6 @@ func TestLogger_NewDir(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, logger.DirPath, path)
 	assert.Equal(t, logger.DirLevels, levels)
-}
-
-func TestLogger_Log(t *testing.T) {
-	readOutput()
-	logger.Log(teles.Info, "log")
-	t.Log(buf.String())
 }
 
 // func TestLogger_LogToFile(t *testing.T) {

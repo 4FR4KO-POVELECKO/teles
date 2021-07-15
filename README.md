@@ -28,8 +28,8 @@ func main() {
 	// Create new logger
 	logger := teles.New()
 
-	// Choose levels
-	levels := []teles.Level{
+	// Log to file 
+	dirLevels := []teles.Level{ // choose levels
 		teles.Panic,
 		teles.Fatal,
 		teles.Error,
@@ -39,14 +39,23 @@ func main() {
 		teles.Trace,
 	}
 
-	// Create logger to directory
-	err := logger.NewDir("./log", levels)
+	err := logger.NewDir("./log", dirLevels)
 	if err != nil {
 		logger.Error(err)
 	}
 
-	// Create logger to tg bot
-	err = logger.NewBot("BOT_TOKEN", levels)
+	// Log to telegram bot
+	botLevels := []teles.Level{ // choose levels
+		teles.Panic,
+		teles.Fatal,
+		teles.Error,
+		teles.Warning,
+		teles.Info,
+		teles.Debug,
+		teles.Trace,
+	}
+
+	err = logger.NewBot("BOT_TOKEN", botLevels)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -56,7 +65,7 @@ func main() {
 
 Usage:
 ```go
-logger.Log(teles.Info, "text")
+logger.Log("./log/trace.Log", teles.Info, "text")
 logger.Trace("text")
 logger.Debug("text")
 logger.Info("text")

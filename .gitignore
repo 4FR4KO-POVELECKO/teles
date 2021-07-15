@@ -16,3 +16,4 @@
 # Dependency directories
 cmd/
 log/
+.teles

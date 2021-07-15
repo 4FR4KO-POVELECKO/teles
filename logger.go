@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/4FR4KO-POVELECKO/teles/internal/tg"
 )
 
 type Logger struct {
-	Bot       *tg.TelegramBot
+	Bot       *telegrambot
 	BotLevels []Level
 
 	DirPath   string
@@ -22,8 +20,9 @@ func New() *Logger {
 }
 
 func (l *Logger) NewBot(token string, levels []Level) error {
-	bot, err := tg.New(token)
+	bot, err := new(token)
 	if err != nil {
+		l.Error(err)
 		return errors.New("Error to connect the bot")
 	}
 
@@ -38,6 +37,7 @@ func (l *Logger) NewDir(path string, levels []Level) error {
 	if os.IsNotExist(err) {
 		err := os.Mkdir(path, os.ModePerm)
 		if err != nil {
+			l.Error(err)
 			return errors.New("Error to create directory")
 		}
 
@@ -53,27 +53,19 @@ func (l *Logger) NewDir(path string, levels []Level) error {
 		return nil
 	}
 
+	l.Error(err)
 	return errors.New("Error to create directory, a file with the same name already exists")
 }
 
 // Loggers
-
-var now = time.Now().Format("2006.01.02 15:04:05")
-
-func (l *Logger) Log(level Level, args ...interface{}) {
-	str := fmt.Sprintf("%v", args...)
-	fmt.Printf("[%s] %s %s\n", now, level, str)
-}
-
 func (l *Logger) LogToFile(path string, level Level, args ...interface{}) {
-	str := fmt.Sprintf("%v", args...)
-	write := fmt.Sprintf("[%s] %s %s\n", now, level, str)
+	write := l.getLogStr(level, args...)
 
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		f, err := os.Create(path)
 		if err != nil {
-			l.Error(errors.New("Error to create file"))
+			l.Error(errors.New("Error to create file"), err)
 			return
 		}
 
@@ -82,134 +74,66 @@ func (l *Logger) LogToFile(path string, level Level, args ...interface{}) {
 
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		l.Error(errors.New("Error to open file"))
+		l.Error(errors.New("Error to open file"), err)
 		return
 	}
 	defer f.Close()
 
 	_, err = f.WriteString(write)
 	if err != nil {
-		l.Error(errors.New("Error to write file"))
+		l.Error(errors.New("Error to write file"), err)
 		return
 	}
 }
 
-func (l *Logger) GetLogStr(level Level, args ...interface{}) string {
-	str := fmt.Sprintf("%v", args...)
-	write := fmt.Sprintf("[%s] %s %s\n", now, level, str)
+func (l *Logger) Log(path string, level Level, args ...interface{}) {
+	result := l.checkToArray(level, l.DirLevels)
+	if result {
+		l.LogToFile(path, level, args...)
+	}
 
-	return write
+	result = l.checkToArray(level, l.BotLevels)
+	if result {
+		msg := l.getLogStr(level, args...)
+		l.Bot.send(msg)
+	}
+
+	write := l.getLogStr(level, args...)
+
+	fmt.Println(write)
 }
 
 func (l *Logger) Trace(args ...interface{}) {
-	result := l.checkToArray(Trace, l.DirLevels)
-	if result {
-		l.LogToFile("./log/trace.log", Trace, args...)
-	}
-
-	result = l.checkToArray(Trace, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Trace, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Trace, args...)
+	l.Log("./log/trace.Log", Trace, args...)
 }
 
 func (l *Logger) Debug(args ...interface{}) {
-	result := l.checkToArray(Debug, l.DirLevels)
-	if result {
-		l.LogToFile("./log/debug.log", Debug, args...)
-	}
-
-	result = l.checkToArray(Debug, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Debug, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Debug, args...)
+	l.Log("./log/debug.Log", Debug, args...)
 }
 
 func (l *Logger) Info(args ...interface{}) {
-	result := l.checkToArray(Info, l.DirLevels)
-	if result {
-		l.LogToFile("./log/info.log", Info, args...)
-	}
-
-	result = l.checkToArray(Info, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Info, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Info, args...)
+	l.Log("./log/info.Log", Info, args...)
 }
 
 func (l *Logger) Warning(args ...interface{}) {
-	result := l.checkToArray(Warning, l.DirLevels)
-	if result {
-		l.LogToFile("./log/warn.log", Warning, args...)
-	}
-
-	result = l.checkToArray(Warning, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Warning, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Warning, args...)
+	l.Log("./log/warn.Log", Warning, args...)
 }
 
 func (l *Logger) Error(args ...interface{}) {
-	result := l.checkToArray(Error, l.DirLevels)
-	if result {
-		l.LogToFile("./log/error.log", Error, args...)
-	}
-
-	result = l.checkToArray(Error, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Error, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Error, args...)
+	l.Log("./log/error.Log", Error, args...)
 }
 
 func (l *Logger) Fatal(args ...interface{}) {
-	result := l.checkToArray(Fatal, l.DirLevels)
-	if result {
-		l.LogToFile("./log/fatal.log", Fatal, args...)
-	}
-
-	result = l.checkToArray(Fatal, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Fatal, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Fatal, args...)
+	l.Log("./log/fatal.Log", Fatal, args...)
 	os.Exit(1)
 }
 
 func (l *Logger) Panic(args ...interface{}) {
-	result := l.checkToArray(Panic, l.DirLevels)
-	if result {
-		l.LogToFile("./log/panic.log", Panic, args...)
-	}
-
-	result = l.checkToArray(Panic, l.BotLevels)
-	if result {
-		msg := l.GetLogStr(Panic, args...)
-		l.Bot.Send(msg)
-	}
-
-	l.Log(Panic, args...)
+	l.Log("./log/panic.Log", Panic, args...)
 	panic(args)
 }
 
 // Helpers
-
 func (l *Logger) checkToArray(level Level, array []Level) bool {
 	for _, value := range array {
 		if value == level {
@@ -218,4 +142,12 @@ func (l *Logger) checkToArray(level Level, array []Level) bool {
 	}
 
 	return false
+}
+
+func (l *Logger) getLogStr(level Level, args ...interface{}) string {
+	now := time.Now().Format("2006.01.02 15:04:05")
+	str := fmt.Sprintf("%v", args...)
+	write := fmt.Sprintf("[%s] %s %s", now, level, str)
+
+	return write
 }
